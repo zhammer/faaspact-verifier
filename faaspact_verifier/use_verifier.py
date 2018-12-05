@@ -30,4 +30,14 @@ def use_verifier(context: Context,
                 verification_results
             )
 
-    return job.succeeded(zip(pacts, verification_results_list), failon)
+    succeeded = job.succeeded(zip(pacts, verification_results_list), failon)
+
+    context.notification_gateway.announce_job_results(
+        pacts=pacts,
+        emulator_results_list=emulator_results_list,
+        verification_results_list=verification_results_list,
+        results_published=publish_results,
+        succeeded=succeeded
+    )
+
+    return succeeded
