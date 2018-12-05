@@ -16,6 +16,7 @@ pipenv = "*"
 [packages]
 requests = "*"
 pactman = "*"
+colorama = "*"
 
 [requires]
 python_version = "3.7"
