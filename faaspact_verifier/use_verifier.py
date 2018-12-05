@@ -30,4 +30,4 @@ def use_verifier(context: Context,
                 verification_results
             )
 
-    return job.should_fail(zip(pacts, verification_results_list), failon)
+    return job.succeeded(zip(pacts, verification_results_list), failon)

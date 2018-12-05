@@ -3,8 +3,8 @@ from typing import FrozenSet, Iterable, List, Tuple
 from faaspact_verifier.definitions import Pact, VerificationResult
 
 
-def should_fail(pact_with_verification_results: Iterable[Tuple[Pact, List[VerificationResult]]],
-                failon: FrozenSet[str]) -> bool:
+def succeeded(pact_with_verification_results: Iterable[Tuple[Pact, List[VerificationResult]]],
+              failon: FrozenSet[str]) -> bool:
     for pact, verification_results in pact_with_verification_results:
         verified = all(verification_result.verified for verification_result in verification_results)
         if not verified and _overlap(pact.tags, failon):
