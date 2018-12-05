@@ -11,7 +11,7 @@ with open('README.md', 'r') as readme:
 
 setup(
     name='faaspact-verifier',
-    version='0.0.1',
+    version='0.0.2',
     description='Verify pacts for python faas microservices.',
     url='https://github.com/zhammer/faaspact-verifier',
     packages=find_packages(),
