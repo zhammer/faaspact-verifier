@@ -1,0 +1,47 @@
+version: 2.1
+
+jobs:
+  test:
+    executor: python-executor
+    steps:
+      - checkout
+      - install-python-dependencies
+      - run:
+          name: Run mypy
+          command: pipenv run mypy faaspact_verifier/
+      - run:
+          name: Run flake8
+          command: pipenv run flake8 faaspact_verifier/
+      - run:
+          name: Run pytest
+          command: pipenv run pytest --junitxml=test-results/pytest/results.xml
+      - store_test_results:
+          path: test-results
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
+
+executors:
+  python-executor:
+    docker:
+      - image: circleci/python:3.7.1-stretch
+
+commands:
+  install-python-dependencies:
+    description: "Install python dependencies from Pipfile.lock and cache results."
+    steps:
+      - restore_cache:
+          keys:
+            - pipenv-cache-{{ checksum "Pipfile.lock" }}
+            - pipenv-cache-
+      - run:
+          name: Install dependencies
+          command: pipenv sync --dev
+      - save_cache:
+          key: pipenv-cache-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ~/.local
+            - ~/.cache
