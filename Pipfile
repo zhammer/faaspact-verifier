@@ -1,0 +1,27 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest-hammertime = "*"
+flake8-import-order = "*"
+flake8-per-file-ignores = "*"
+mypy = "*"
+flake8 = "*"
+pytest = "*"
+twine = "*"
+pipenv = "*"
+
+[packages]
+requests = "*"
+pactman = "*"
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+check = "sh -c 'mypy . && flake8 . && pytest -q'"
+bundle = "python setup.py sdist bdist_wheel"
+sweep = "rm -fr build dist faaspact_verifier.egg-info"
+deploy = "twine upload dist/*"
