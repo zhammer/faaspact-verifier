@@ -17,12 +17,21 @@ jobs:
           command: pipenv run pytest --junitxml=test-results/pytest/results.xml
       - store_test_results:
           path: test-results
+  bundle:
+    executor: python-executor
+    steps:
+      - checkout
+      - install-python-dependencies
+      - run:
+          name: Bundle package
+          command: pipenv run bundle
 
 workflows:
   version: 2
   build:
     jobs:
       - test
+      - bundle
 
 executors:
   python-executor:
