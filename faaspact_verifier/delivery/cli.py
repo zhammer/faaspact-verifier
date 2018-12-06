@@ -1,7 +1,8 @@
 import argparse
 import importlib
 import os
-from typing import Dict, NoReturn
+import subprocess
+from typing import Dict, NoReturn, cast
 
 from faaspact_verifier import use_verifier
 from faaspact_verifier.context import create_default_context
@@ -83,8 +84,8 @@ def _parse_args() -> argparse.Namespace:
                         help='If true, publish verification results to the broker.')
 
     parser.add_argument('--provider-version',
-                        required=True,
-                        help='The version of the provider. Should be the git sha.')
+                        required=False,
+                        help='The version of the provider. Defaults to the current git SHA.')
 
     parser.add_argument('--github-pr',
                         required=False,
@@ -99,6 +100,9 @@ def _parse_args() -> argparse.Namespace:
                               ' will fail.'))
 
     args = parser.parse_args()
+
+    if not args.provider_version:
+        args.provider_version = _current_commit_sha()
 
     if not args.host:
         raise parser.error('Missing host')
@@ -116,3 +120,8 @@ def _parse_args() -> argparse.Namespace:
         raise parser.error('Missing provider')
 
     return args
+
+
+def _current_commit_sha() -> str:
+    out = cast(bytes, subprocess.check_output(['git', 'rev-parse', 'HEAD']))
+    return out.decode().rstrip('\n')
