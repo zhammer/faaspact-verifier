@@ -1,22 +1,26 @@
 import argparse
 import importlib
 import os
-from typing import NoReturn
+from typing import Dict, NoReturn
 
 from faaspact_verifier import use_verifier
 from faaspact_verifier.context import create_default_context
 from faaspact_verifier.delivery.github_prs import GithubPrError, fetch_feature_pacts
+from faaspact_verifier.types import ProviderStateFixture
 
 
 def cli() -> NoReturn:
     args = _parse_args()
     faasport_module = importlib.import_module(args.faasport_module)
     user_faasport = faasport_module.faasport.__globals__['user_faasport']  # type: ignore
-    user_provider_state_fixture_by_descriptor = (
-        faasport_module.provider_state.__globals__[  # type: ignore
-            'user_provider_state_fixture_by_descriptor'
-        ]
-    )
+    user_provider_state_fixture_by_descriptor: Dict[str, ProviderStateFixture] = {}
+    if hasattr(faasport_module, 'provider_state'):
+        user_provider_state_fixture_by_descriptor = (
+            faasport_module.provider_state.__globals__[  # type: ignore
+                'user_provider_state_fixture_by_descriptor'
+            ]
+        )
+
     context = create_default_context(args.host, args.username, args.password)
 
     if args.github_pr:
