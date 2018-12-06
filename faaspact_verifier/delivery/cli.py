@@ -5,6 +5,7 @@ from typing import NoReturn
 
 from faaspact_verifier import use_verifier
 from faaspact_verifier.context import create_default_context
+from faaspact_verifier.delivery.github_prs import GithubPrError, fetch_feature_pacts
 
 
 def cli() -> NoReturn:
@@ -18,13 +19,23 @@ def cli() -> NoReturn:
     )
     context = create_default_context(args.host, args.username, args.password)
 
+    if args.github_pr:
+        try:
+            github_pr_feature_tags = fetch_feature_pacts(args.github_pr)
+        except GithubPrError as e:
+            print(e)
+            exit(1)
+        failon = frozenset(args.failon) | github_pr_feature_tags
+    else:
+        failon = frozenset(args.failon)
+
     succeeded = use_verifier(
         context,
         args.provider,
         user_provider_state_fixture_by_descriptor,
         user_faasport,
         args.publish_results,
-        failon=frozenset(args.failon),
+        failon=failon,
         provider_version=args.provider_version
     )
 
@@ -70,6 +81,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument('--provider-version',
                         required=True,
                         help='The version of the provider. Should be the git sha.')
+
+    parser.add_argument('--github-pr',
+                        required=False,
+                        help=('Url of associated github PR. If PR body has line '
+                              '"feature-pacts: x y ...", those feature-pacts will be added to '
+                              '--failon tags.'))
 
     parser.add_argument('--failon',
                         action='append',
