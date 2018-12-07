@@ -1,4 +1,4 @@
-from typing import Dict, FrozenSet
+from typing import Callable, ContextManager, Dict, FrozenSet, Optional
 
 from faaspact_verifier.context import Context
 from faaspact_verifier.entities import emulator, job
@@ -11,11 +11,17 @@ def use_verifier(context: Context,
                  faasport: Faasport,
                  publish_results: bool,
                  failon: FrozenSet,
-                 provider_version: str) -> bool:
+                 provider_version: str,
+                 always: Optional[Callable[[], ContextManager]] = None) -> bool:
     pacts = context.pact_broker_gateway.fetch_provider_pacts(provider)
 
     emulator_results_list = [
-        emulator.emulate_pact_interactions(pact, provider_state_fixture_by_descriptor, faasport)
+        emulator.emulate_pact_interactions(
+            pact,
+            provider_state_fixture_by_descriptor,
+            faasport,
+            always
+        )
         for pact in pacts
     ]
 

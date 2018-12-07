@@ -1,23 +1,33 @@
 import contextlib
 import inspect
 import traceback
-from typing import Callable, Dict, FrozenSet, Generator, List, Tuple
+from contextlib import nullcontext  # type: ignore
+from typing import Callable, Dict, FrozenSet, Generator, List, Optional, Tuple, cast
 
 from faaspact_verifier.definitions import Error, Interaction, Pact, ProviderState
 from faaspact_verifier.exceptions import UnsupportedProviderStateError
-from faaspact_verifier.types import EmulatorResult, Faasport, ProviderStateFixture
+from faaspact_verifier.types import AlwaysFixture, EmulatorResult, Faasport, ProviderStateFixture
 
 
 def emulate_pact_interactions(pact: Pact,
                               provider_state_fixture_by_descriptor: Dict[str, ProviderStateFixture],
-                              faasport: Faasport) -> List[EmulatorResult]:
-    return [_emulate_interaction(interaction, provider_state_fixture_by_descriptor, faasport)
-            for interaction in pact.interactions]
+                              faasport: Faasport,
+                              always: Optional[AlwaysFixture] = None) -> List[EmulatorResult]:
+    return [
+        _emulate_interaction(
+            interaction,
+            provider_state_fixture_by_descriptor,
+            faasport,
+            always
+        )
+        for interaction in pact.interactions
+    ]
 
 
 def _emulate_interaction(interaction: Interaction,
                          provider_state_fixture_by_descriptor: Dict[str, ProviderStateFixture],
-                         faasport: Faasport) -> EmulatorResult:
+                         faasport: Faasport,
+                         always: Optional[AlwaysFixture] = None) -> EmulatorResult:
     try:
         provider_state_fixtures_with_params = _provider_state_fixtures_with_params(
             provider_state_fixture_by_descriptor,
@@ -26,14 +36,17 @@ def _emulate_interaction(interaction: Interaction,
     except UnsupportedProviderStateError as e:
         return Error(message=str(e))
 
-    with _use_provider_states(provider_state_fixtures_with_params):
-        try:
-            return faasport(interaction.request)
-        except Exception:
-            return Error(
-                message='Provider raised an exception',
-                traceback=traceback.format_exc()
-            )
+    always_fixture = cast(AlwaysFixture, always or nullcontext())
+
+    with always_fixture():
+        with _use_provider_states(provider_state_fixtures_with_params):
+            try:
+                return faasport(interaction.request)
+            except Exception:
+                return Error(
+                    message='Provider raised an exception',
+                    traceback=traceback.format_exc()
+                )
 
 
 def _provider_state_fixtures_with_params(

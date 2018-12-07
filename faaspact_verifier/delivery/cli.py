@@ -2,7 +2,7 @@ import argparse
 import importlib
 import os
 import subprocess
-from typing import Dict, NoReturn, cast
+from typing import Callable, ContextManager, Dict, NoReturn, Optional, cast
 
 from faaspact_verifier import use_verifier
 from faaspact_verifier.context import create_default_context
@@ -21,6 +21,9 @@ def cli() -> NoReturn:
                 'user_provider_state_fixture_by_descriptor'
             ]
         )
+    user_always: Optional[Callable[[], ContextManager]] = None
+    if hasattr(faasport_module, 'always'):
+        user_always = faasport_module.always.__globals__['user_always']  # type: ignore
 
     context = create_default_context(args.host, args.username, args.password)
 
@@ -41,7 +44,8 @@ def cli() -> NoReturn:
         user_faasport,
         args.publish_results,
         failon=failon,
-        provider_version=args.provider_version
+        provider_version=args.provider_version,
+        always=user_always
     )
 
     if succeeded:
