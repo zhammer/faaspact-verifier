@@ -99,4 +99,14 @@ def _pluck_response(raw_response: Dict) -> Response:
 
 
 def _pluck_provider_state(raw_provider_state: Dict) -> ProviderState:
-    return ProviderState(**raw_provider_state)
+    """
+    >>> _pluck_provider_state({'name': 'there is an egg'})
+    ProviderState(descriptor='there is an egg', params=None)
+
+    >>> _pluck_provider_state({'name': 'there is an egg called', 'params': {'name': 'humpty'}})
+    ProviderState(descriptor='there is an egg called', params={'name': 'humpty'})
+    """
+    return ProviderState(
+        descriptor=raw_provider_state['name'],
+        params=raw_provider_state.get('params')
+    )
