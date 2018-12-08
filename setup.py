@@ -11,10 +11,11 @@ with open('README.md', 'r') as readme:
 
 setup(
     name='faaspact-verifier',
-    version='0.0.5',
+    version='0.0.6',
     description='Verify pacts for python faas microservices.',
     url='https://github.com/zhammer/faaspact-verifier',
     packages=find_packages(),
+    package_data={'faaspact_verifier': ['py.typed']},
     entry_points={
         'console_scripts': ['faaspact-verifier=faaspact_verifier.delivery.cli:cli']
     },
