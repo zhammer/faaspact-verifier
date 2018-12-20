@@ -36,7 +36,7 @@ def _emulate_interaction(interaction: Interaction,
     except UnsupportedProviderStateError as e:
         return Error(message=str(e))
 
-    always_fixture = cast(AlwaysFixture, always or nullcontext())
+    always_fixture = cast(AlwaysFixture, always or nullcontext)
 
     with always_fixture():
         with _use_provider_states(provider_state_fixtures_with_params):
